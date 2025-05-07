@@ -1,42 +1,51 @@
-name: Manual Branch Scan Workflow
+name: Manual Mend Trigger with Branch Selection
 
 on:
   workflow_dispatch:
     inputs:
       target-branch:
-        description: 'Enter the branch to scan (e.g., testbranch)'
+        description: 'Select the branch to run the scan on'
         required: true
         default: 'main'
-      scan-type:
-        description: 'Select scan type'
+        type: choice
+        options:
+          - main
+          - testbranch
+      test-type:
+        description: 'Select test type'
         required: true
         type: choice
         options:
-          - mend
-          - snyk
+          - unit
+          - integration
           - both
-        default: 'mend'
+        default: 'both'
 
 jobs:
-  scan:
+  run-tests:
+    name: Run Tests or Mend on Selected Branch
     runs-on: ubuntu-latest
 
     steps:
+      - name: Print selected inputs
+        run: |
+          echo "Selected branch: ${{ github.event.inputs.target-branch }}"
+          echo "Selected test type: ${{ github.event.inputs.test-type }}"
+
       - name: Checkout selected branch
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.target-branch }}
 
-      - name: Run Mend Scan
-        if: ${{ github.event.inputs.scan-type == 'mend' || github.event.inputs.scan-type == 'both' }}
-        run: |
-          echo "Running Mend scan on branch ${{ github.event.inputs.target-branch }}"
-          # Insert actual Mend scan command here
-          # Example: mend-cli scan --branch ${{ github.event.inputs.target-branch }}
+      - name: Print current checked out branch
+        run: git branch --show-current
 
-      - name: Run Snyk Scan
-        if: ${{ github.event.inputs.scan-type == 'snyk' || github.event.inputs.scan-type == 'both' }}
+      - name: Run test type logic (mocked for now)
         run: |
-          echo "Running Snyk scan on branch ${{ github.event.inputs.target-branch }}"
-          # Insert actual Snyk scan command here
-          # Example: snyk test --all-projects
+          if [ "${{ github.event.inputs.test-type }}" == "unit" ]; then
+            echo "Running unit tests..."
+          elif [ "${{ github.event.inputs.test-type }}" == "integration" ]; then
+            echo "Running integration tests..."
+          else
+            echo "Running both unit and integration tests..."
+          fi
