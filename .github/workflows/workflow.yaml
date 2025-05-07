@@ -1,0 +1,23 @@
+name: Test Dropdown Workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      test-type:
+        description: 'Select test type'
+        required: true
+        type: choice
+        options:
+          - unit
+          - integration
+          - both
+        default: 'both'
+    branches:
+      - '**' # Allow all branches for manual triggers
+
+jobs:
+  test-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Echo Selected Test Type
+        run: echo "Selected test type is ${{ github.event.inputs.test-type }}"
