@@ -1,23 +1,42 @@
-name: Test Dropdown Workflow
+name: Manual Branch Scan Workflow
 
 on:
   workflow_dispatch:
     inputs:
-      test-type:
-        description: 'Select test type'
+      target-branch:
+        description: 'Enter the branch to scan (e.g., testbranch)'
+        required: true
+        default: 'main'
+      scan-type:
+        description: 'Select scan type'
         required: true
         type: choice
         options:
-          - unit
-          - integration
+          - mend
+          - snyk
           - both
-        default: 'both'
-    branches:
-      - '**' # Allow all branches for manual triggers
+        default: 'mend'
 
 jobs:
-  test-job:
+  scan:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Echo Selected Test Type
-        run: echo "Selected test type is ${{ github.event.inputs.test-type }}"
+      - name: Checkout selected branch
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.target-branch }}
+
+      - name: Run Mend Scan
+        if: ${{ github.event.inputs.scan-type == 'mend' || github.event.inputs.scan-type == 'both' }}
+        run: |
+          echo "Running Mend scan on branch ${{ github.event.inputs.target-branch }}"
+          # Insert actual Mend scan command here
+          # Example: mend-cli scan --branch ${{ github.event.inputs.target-branch }}
+
+      - name: Run Snyk Scan
+        if: ${{ github.event.inputs.scan-type == 'snyk' || github.event.inputs.scan-type == 'both' }}
+        run: |
+          echo "Running Snyk scan on branch ${{ github.event.inputs.target-branch }}"
+          # Insert actual Snyk scan command here
+          # Example: snyk test --all-projects
